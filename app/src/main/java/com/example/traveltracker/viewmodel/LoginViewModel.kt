@@ -15,7 +15,7 @@ class LoginViewModel : ViewModel() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
-    fun login(email: String, password: String, onLoginSuccess: () -> Unit) {
+    fun login(email: String, password: String) {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
             try {
@@ -23,7 +23,6 @@ class LoginViewModel : ViewModel() {
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             _uiState.update { it.copy(isLoading = false, isUserLoggedIn = true) }
-                            onLoginSuccess() // Callback för att navigera vidare
                         } else {
                             _uiState.update { it.copy(isLoading = false, errorMessage = task.exception?.message) }
                         }

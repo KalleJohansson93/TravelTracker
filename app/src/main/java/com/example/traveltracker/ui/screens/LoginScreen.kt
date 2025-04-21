@@ -12,7 +12,6 @@ import com.example.traveltracker.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
     onNavigateToRegister: () -> Unit,
     loginViewModel: LoginViewModel = viewModel() // Hämta ViewModel
 ) {
@@ -20,13 +19,6 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val isLoginEnabled by remember { derivedStateOf { email.isNotBlank() && password.isNotBlank() } }
-
-    LaunchedEffect(uiState.isUserLoggedIn) {
-        if (uiState.isUserLoggedIn) {
-            onLoginSuccess()
-            loginViewModel.resetState() // Återställ state efter lyckad inloggning
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -54,7 +46,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                loginViewModel.login(email, password, onLoginSuccess)
+                loginViewModel.login(email, password)
             },
             enabled = isLoginEnabled && !uiState.isLoading,
             modifier = Modifier.fillMaxWidth()
