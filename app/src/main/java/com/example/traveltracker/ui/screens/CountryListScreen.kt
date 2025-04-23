@@ -10,29 +10,29 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel // Kommentera ut om du skickar ViewModel via navigation
-import com.example.traveltracker.data.Country
-import com.example.traveltracker.data.CountryStatus
+import com.example.traveltracker.data.Country // Din kombinerade Country-klass
+import com.example.traveltracker.data.CountryStatus // Din Enum
 import com.example.traveltracker.viewmodel.CountryListViewModel
-import android.util.Log
+import android.util.Log // Behåll loggning för debugging
+import androidx.compose.ui.graphics.Color // För feltext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CountryListScreen(
-    // Vi tar emot ViewModel som en parameter nu för att skopas av LoggedInContent
-    viewModel: CountryListViewModel, // Ingen default viewModel() här längre
-    onLogoutClick: () -> Unit // Lambda för utloggning
+    // Vi tar emot ViewModel som en parameter
+    viewModel: CountryListViewModel,
+    onLogoutClick: () -> Unit
 ) {
+    // Observera staten från ViewModel
     val countries by viewModel.countries.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    // Behåll error state för att visa meddelanden om t.ex. Firestore-uppdateringar misslyckas
+    // val error by viewModel.error.collectAsState() // Antag att du har en _error StateFlow i ViewModel
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Select Countries") },
                 actions = {
-                    // Lägg till en utloggningsikon/knapp i TopAppBar
                     IconButton(onClick = onLogoutClick) {
                         Icon(Icons.Default.Logout, contentDescription = "Logout")
                     }
@@ -41,50 +41,72 @@ fun CountryListScreen(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-            when {
-                isLoading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                    Log.d("CountryListScreen", "Showing loading indicator")
-                }
-                error != null -> {
-                    Text(
-                        text = "Error: $error",
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.align(Alignment.Center).padding(16.dp)
-                    )
-                    Log.e("CountryListScreen", "Showing error: $error")
-                }
-                countries.isNotEmpty() -> {
-                    Log.d("CountryListScreen", "Showing country list with ${countries.size} items")
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        items(countries, key = { country -> country.name }) { country ->
-                            CountryListItem(
-                                country = country,
-                                onStatusChanged = { newStatus ->
-                                    viewModel.updateCountryStatus(country.name, newStatus)
-                                }
-                            )
-                            Divider(modifier = Modifier.padding(vertical = 8.dp))
-                        }
+
+            // Visa felmeddelande om det finns ett
+            // error?.let { errorMessage ->
+            //     Text(
+            //         text = "Error: $errorMessage",
+            //         color = MaterialTheme.colorScheme.error,
+            //         modifier = Modifier.align(Alignment.TopCenter).padding(16.dp)
+            //     )
+            // }
+
+            // Vi visar listan om den inte är tom
+            if (countries.isNotEmpty()) {
+                Log.d("CountryListScreen", "Showing country list with ${countries.size} items")
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    // Använd landkoden som nyckel istället för namn, den är stabilare
+                    items(countries, key = { country -> country.code }) { country ->
+                        CountryListItem(
+                            country = country,
+                            onStatusChanged = { newStatus ->
+                                // Anropa ViewModel för att uppdatera status, skicka landkoden
+                                viewModel.updateCountryStatus(country.code, newStatus)
+                            }
+                        )
+                        Divider(modifier = Modifier.padding(vertical = 8.dp))
                     }
                 }
-                else -> {
-                    Text(
-                        text = "No countries found or you might need to log in.",
-                        modifier = Modifier.align(Alignment.Center).padding(16.dp)
-                    )
-                    Log.d("CountryListScreen", "Showing empty list message")
-                }
+            } else {
+                // Visa ett meddelande om listan är tom (t.ex. vid uppstart innan data laddats,
+                // eller om JSON-filen inte lästes korrekt, eller om ingen användare är inloggad
+                // och repositoryn returnerar tom lista).
+                // Med din setup borde den lokala listan laddas snabbt, så detta är mer för fel/tom data
+                // Om du vill visa en laddningsindikator HÄR medan Firestore hämtar ANVÄNDAR-data
+                // (efter att den statiska listan laddats), kan du lägga till isLoading tillbaka
+                // i ViewModel och observera den här. Men för initial visning av en tom lista är detta OK.
+
+                // Om du vill visa en laddningsindikator *specifikt* medan den *initiala användardatan*
+                // synkas från Firestore (om cachen är tom), kan du lägga till en isLoading-flagga
+                // i din ViewModel som sätts till true i init() och false när den första datan kommer.
+                // Sedan lägger du till en when(isLoading) { ... } här.
+                // Men om listan blir tom EFTER att data visats (t.ex. utloggning),
+                // är detta meddelande mer passande.
+
+                Text(
+                    text = "Loading countries or no countries found...", // Bättre text
+                    modifier = Modifier.align(Alignment.Center).padding(16.dp)
+                )
+                Log.d("CountryListScreen", "Showing empty/loading message")
             }
+
+            // Exempel: Visa en CircularProgressIndicator endast om ViewModel indikerar en PÅGÅENDE operation
+            // som tar tid UTÖVER den initiala laddningen/synkningen.
+            // T.ex. om du har en separat flagga i ViewModel för "isUpdatingStatus"
+            // val isUpdatingStatus by viewModel.isUpdatingStatus.collectAsState()
+            // if (isUpdatingStatus) {
+            //     CircularProgressIndicator(modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp))
+            // }
         }
     }
 }
 
-// CountryListItem Composable förblir oförändrad
+// CountryListItem... (ingen ändring behövs här, den tar emot Country och lambda)
+
 @Composable
 fun CountryListItem(country: Country, onStatusChanged: (CountryStatus) -> Unit) {
     Column(

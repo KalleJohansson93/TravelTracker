@@ -1,57 +1,107 @@
 package com.example.traveltracker.ui
 
+import CountryRepository
+import LocalCountryDataSource
+import android.content.Context // Behövs för att få Context
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.ShowChart // Kräver material-icons-core och extended
+import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember // Använd remember för att inte skapa instanser i varje recomposition
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext // För att få Context i Composable
+import androidx.lifecycle.viewmodel.compose.viewModel // Används med factory
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.traveltracker.ui.screens.CountryListScreen // Importera
-import com.example.traveltracker.ui.screens.StatisticsScreen // Importera
-import com.example.traveltracker.viewmodel.CountryListViewModel // Importera
 
-// Definiera rutter för den inloggade navigationsgrafen
+// Importera dina nya Data Sources och Repository
+import com.example.traveltracker.data.FirestoreUserCountryDataSource
+import com.example.traveltracker.ui.screens.CountryListScreen
+import com.example.traveltracker.ui.screens.StatisticsScreen
+
+// Importera din Factory
+import com.example.traveltracker.viewmodel.CountryListViewModelFactory
+import com.example.traveltracker.viewmodel.CountryListViewModel // Din ViewModel
+
+// Importera Firebase instanser
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings // Importera för offline
+
+// ... (LoggedInRoutes och bottomNavItems är oförändrade)
 object LoggedInRoutes {
     const val COUNTRY_LIST = "countryList"
     const val STATISTICS = "statistics"
 }
 
-// Modell för Bottom Navigation-items
 data class BottomNavItem(
     val route: String,
     val icon: ImageVector,
     val label: String
 )
 
-// Lista över items i Bottom Navigation
 val bottomNavItems = listOf(
     BottomNavItem(LoggedInRoutes.COUNTRY_LIST, Icons.Default.List, "Countries"),
     BottomNavItem(LoggedInRoutes.STATISTICS, Icons.Default.ShowChart, "Statistics")
 )
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoggedInContent(
-    appNavController: NavHostController, // NavController från huvudgrafen (för att navigera bort, t.ex. logout)
-    onLogout: () -> Unit // Lambda för att trigga utloggning
+    appNavController: NavHostController, // Används om du vill navigera UTANFÖR logged-in grafen
+    onLogout: () -> Unit // Lambda för utloggning
 ) {
-    // Egen NavController för den inloggade navigationsgrafen
     val loggedInNavController = rememberNavController()
-    // Observera den aktuella destinationen för att veta vilket item som är valt
     val navBackStackEntry by loggedInNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    // --- SKAPA DEPENDENCIES OCH FACTORY HÄR ---
+    // Använd remember för att dessa instanser ska överleva recompositions
+    val context = LocalContext.current
+    val firebaseAuth = remember { FirebaseAuth.getInstance() }
+    val firestore = remember { FirebaseFirestore.getInstance() }
+
+    // *** VIKTIGT: Aktivera Offline Persistence här eller i Application-klassen ***
+    // Gör detta bara EN gång i appens livstid
+    remember {
+        try {
+            val settings = FirebaseFirestoreSettings.Builder()
+                .setPersistenceEnabled(true) // Aktivera offline persistence
+                .build()
+            firestore.firestoreSettings = settings
+            // Logga eller hantera om inställningarna redan är satta
+            android.util.Log.d("FirestoreSetup", "Offline persistence enabled")
+        } catch (e: Exception) {
+            // Hantera fallet om persistence redan är aktiverat (sker om du sätter det flera gånger)
+            android.util.Log.e("FirestoreSetup", "Error enabling offline persistence: ${e.message}")
+        }
+        // Returnera något värde för remember att cacha, t.ex. true
+        true
+    }
+
+
+    // Skapa datakällor
+    val localCountryDataSource = remember { LocalCountryDataSource(context) }
+    val firestoreUserCountryDataSource = remember { FirestoreUserCountryDataSource(firestore, firebaseAuth) }
+
+    // Skapa repository
+    val countryRepository = remember { CountryRepository(localCountryDataSource, firestoreUserCountryDataSource) }
+
+    // Skapa ViewModel Factory
+    val countryListViewModelFactory = remember { CountryListViewModelFactory(countryRepository, firebaseAuth) }
+
+    // --- ANVÄND FACTORYN NÄR VIEWMODEL SKAPAS ---
     Scaffold(
         bottomBar = {
+            // ... (Bottom Navigation Bar code, oförändrad)
             NavigationBar {
                 bottomNavItems.forEach { item ->
                     NavigationBarItem(
@@ -59,16 +109,12 @@ fun LoggedInContent(
                         label = { Text(item.label) },
                         selected = currentRoute == item.route,
                         onClick = {
-                            // Undvik att navigera till samma destination igen
                             if (currentRoute != item.route) {
                                 loggedInNavController.navigate(item.route) {
-                                    // Pop up till startdestinationen för att undvika en stor backstack
                                     popUpTo(loggedInNavController.graph.startDestinationId) {
-                                        saveState = true // Spara state för att kunna återställa skärmen
+                                        saveState = true
                                     }
-                                    // Undvik flera kopior av samma destination i backstacken
                                     launchSingleTop = true
-                                    // Återställ state när man väljer samma item igen
                                     restoreState = true
                                 }
                             }
@@ -77,30 +123,26 @@ fun LoggedInContent(
                 }
             }
         }
-        // TopAppBar hanteras bäst i respektive skärm för att kunna visa relevant titel/ikoner
-        // Vi skickar in onLogout till skärmarna så de kan lägga till en Logout-knapp i sin TopBar
     ) { innerPadding ->
-        // NavHost för navigeringen inom de inloggade sidorna
         NavHost(
             navController = loggedInNavController,
-            startDestination = LoggedInRoutes.COUNTRY_LIST, // Börja på landlistan
-            modifier = Modifier.padding(innerPadding) // Applicera padding från Scaffold
+            startDestination = LoggedInRoutes.COUNTRY_LIST,
+            modifier = Modifier.padding(innerPadding)
         ) {
             composable(LoggedInRoutes.COUNTRY_LIST) {
-                // Hämta ViewModel här. Standard viewModel() skopar Viewmodel till Composable'n
-                // eller dess navgraph entry.
-                val countryListViewModel: CountryListViewModel = viewModel()
+                // Använd viewModel() med din manuella factory
+                val countryListViewModel: CountryListViewModel = viewModel(factory = countryListViewModelFactory)
+
                 CountryListScreen(
                     viewModel = countryListViewModel,
-                    onLogoutClick = onLogout // Skicka ner utloggningslambdan
+                    onLogoutClick = onLogout
                 )
             }
             composable(LoggedInRoutes.STATISTICS) {
-                // Här kommer din statistiksida
-                // Behöver sannolikt sin egen ViewModel
+                // Här behöver du en StatisticsViewModelFactory om den har beroenden
+                // val statisticsViewModel: StatisticsViewModel = viewModel(...)
                 StatisticsScreen(
-                    onLogoutClick = onLogout // Skicka ner utloggningslambdan
-                    // Passa eventuell ViewModel här: viewModel = statisticsViewModel
+                    onLogoutClick = onLogout
                 )
             }
         }

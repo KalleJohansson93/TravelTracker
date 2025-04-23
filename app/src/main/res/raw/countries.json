@@ -1,0 +1,257 @@
+[
+  {
+    "code": "AL",
+    "name": "Albania",
+    "continent": "Europe"
+  },
+  {
+    "code": "AD",
+    "name": "Andorra",
+    "continent": "Europe"
+  },
+  {
+    "code": "AM",
+    "name": "Armenia",
+    "continent": "Europe"
+  },
+  {
+    "code": "AT",
+    "name": "Austria",
+    "continent": "Europe"
+  },
+  {
+    "code": "AZ",
+    "name": "Azerbaijan",
+    "continent": "Europe"
+  },
+  {
+    "code": "BY",
+    "name": "Belarus",
+    "continent": "Europe"
+  },
+  {
+    "code": "BE",
+    "name": "Belgium",
+    "continent": "Europe"
+  },
+  {
+    "code": "BA",
+    "name": "Bosnia and Herzegovina",
+    "continent": "Europe"
+  },
+  {
+    "code": "BG",
+    "name": "Bulgaria",
+    "continent": "Europe"
+  },
+  {
+    "code": "HR",
+    "name": "Croatia",
+    "continent": "Europe"
+  },
+  {
+    "code": "CY",
+    "name": "Cyprus",
+    "continent": "Europe"
+  },
+  {
+    "code": "CZ",
+    "name": "Czech Republic",
+    "continent": "Europe"
+  },
+  {
+    "code": "DK",
+    "name": "Denmark",
+    "continent": "Europe"
+  },
+  {
+    "code": "EE",
+    "name": "Estonia",
+    "continent": "Europe"
+  },
+  {
+    "code": "FI",
+    "name": "Finland",
+    "continent": "Europe"
+  },
+  {
+    "code": "FR",
+    "name": "France",
+    "continent": "Europe"
+  },
+  {
+    "code": "GE",
+    "name": "Georgia",
+    "continent": "Europe"
+  },
+  {
+    "code": "DE",
+    "name": "Germany",
+    "continent": "Europe"
+  },
+  {
+    "code": "GR",
+    "name": "Greece",
+    "continent": "Europe"
+  },
+  {
+    "code": "HU",
+    "name": "Hungary",
+    "continent": "Europe"
+  },
+  {
+    "code": "IS",
+    "name": "Iceland",
+    "continent": "Europe"
+  },
+  {
+    "code": "IE",
+    "name": "Ireland",
+    "continent": "Europe"
+  },
+  {
+    "code": "IT",
+    "name": "Italy",
+    "continent": "Europe"
+  },
+  {
+    "code": "KZ",
+    "name": "Kazakhstan",
+    "continent": "Europe"
+  },
+  {
+    "code": "XK",
+    "name": "Kosovo",
+    "continent": "Europe"
+  },
+  {
+    "code": "LV",
+    "name": "Latvia",
+    "continent": "Europe"
+  },
+  {
+    "code": "LI",
+    "name": "Liechtenstein",
+    "continent": "Europe"
+  },
+  {
+    "code": "LT",
+    "name": "Lithuania",
+    "continent": "Europe"
+  },
+  {
+    "code": "LU",
+    "name": "Luxembourg",
+    "continent": "Europe"
+  },
+  {
+    "code": "MT",
+    "name": "Malta",
+    "continent": "Europe"
+  },
+  {
+    "code": "MD",
+    "name": "Moldova",
+    "continent": "Europe"
+  },
+  {
+    "code": "MC",
+    "name": "Monaco",
+    "continent": "Europe"
+  },
+  {
+    "code": "ME",
+    "name": "Montenegro",
+    "continent": "Europe"
+  },
+  {
+    "code": "NL",
+    "name": "Netherlands",
+    "continent": "Europe"
+  },
+  {
+    "code": "MK",
+    "name": "North Macedonia",
+    "continent": "Europe"
+  },
+  {
+    "code": "NO",
+    "name": "Norway",
+    "continent": "Europe"
+  },
+  {
+    "code": "PL",
+    "name": "Poland",
+    "continent": "Europe"
+  },
+  {
+    "code": "PT",
+    "name": "Portugal",
+    "continent": "Europe"
+  },
+  {
+    "code": "RO",
+    "name": "Romania",
+    "continent": "Europe"
+  },
+  {
+    "code": "RU",
+    "name": "Russia",
+    "continent": "Europe"
+  },
+  {
+    "code": "SM",
+    "name": "San Marino",
+    "continent": "Europe"
+  },
+  {
+    "code": "RS",
+    "name": "Serbia",
+    "continent": "Europe"
+  },
+  {
+    "code": "SK",
+    "name": "Slovakia",
+    "continent": "Europe"
+  },
+  {
+    "code": "SI",
+    "name": "Slovenia",
+    "continent": "Europe"
+  },
+  {
+    "code": "ES",
+    "name": "Spain",
+    "continent": "Europe"
+  },
+  {
+    "code": "SE",
+    "name": "Sweden",
+    "continent": "Europe"
+  },
+  {
+    "code": "CH",
+    "name": "Switzerland",
+    "continent": "Europe"
+  },
+  {
+    "code": "TR",
+    "name": "Turkey",
+    "continent": "Europe"
+  },
+  {
+    "code": "UA",
+    "name": "Ukraine",
+    "continent": "Europe"
+  },
+  {
+    "code": "GB",
+    "name": "United Kingdom",
+    "continent": "Europe"
+  },
+  {
+    "code": "VA",
+    "name": "Vatican City",
+    "continent": "Europe"
+  }
+]

@@ -1,5 +1,6 @@
 package com.example.traveltracker
 
+import CountryRepository
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel // Kommentera ut om du skickar ViewModel via navigation
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -29,12 +31,15 @@ import com.example.traveltracker.ui.screens.RegisterScreen
 // Import ViewModel om den skickas via navigation: com.example.traveltracker.viewmodel.CountryListViewModel
 import com.example.traveltracker.ui.LoggedInContent // Importera den nya Composable'n
 import com.example.traveltracker.ui.theme.TravelTrackerTheme
+import com.example.traveltracker.viewmodel.CountryListViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContent {
             TravelTrackerTheme {
@@ -154,4 +159,5 @@ fun RegisterScreen(
         }
         // Lägg till din registreringsform etc. här
     }
+
 }
