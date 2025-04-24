@@ -50,12 +50,6 @@ class CountryListViewModel(
         }
     }
 
-    fun logout() {
-        auth.signOut()
-        // ViewModel ska inte hantera navigering, men den kan meddela UI via State/Event
-        // eller så hanterar UI LoggedInContent direkt att användaren är utloggad via Auth State.
-    }
-
     // Implementera funktioner för att uppdatera betyg
     // fun updateCountryRating(countryCode: String, rating: Int?) { ... }
 }
