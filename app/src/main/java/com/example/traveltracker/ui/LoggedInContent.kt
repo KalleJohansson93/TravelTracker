@@ -33,9 +33,11 @@ import com.example.traveltracker.viewmodel.CountryListViewModel // Din ViewModel
 // Importera Firebase instanser
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.FirebaseApp
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings // Importera för offline
 
-// ... (LoggedInRoutes och bottomNavItems är oförändrade)
 object LoggedInRoutes {
     const val COUNTRY_LIST = "countryList"
     const val STATISTICS = "statistics"
@@ -67,7 +69,8 @@ fun LoggedInContent(
     // Använd remember för att dessa instanser ska överleva recompositions
     val context = LocalContext.current
     val firebaseAuth = remember { FirebaseAuth.getInstance() }
-    val firestore = remember { FirebaseFirestore.getInstance() }
+    val firebaseApp = remember { FirebaseApp.getInstance() }
+    val firestore = remember { Firebase.firestore(firebaseApp, "traveltracker") }
 
     // *** VIKTIGT: Aktivera Offline Persistence här eller i Application-klassen ***
     // Gör detta bara EN gång i appens livstid

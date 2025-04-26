@@ -3,9 +3,8 @@ package com.example.traveltracker.viewmodel
 import CountryRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.google.firebase.auth.FirebaseAuth // Firebase Auth
+import com.google.firebase.auth.FirebaseAuth
 
-// Factory för CountryListViewModel
 class CountryListViewModelFactory(
     private val countryRepository: CountryRepository,
     private val auth: FirebaseAuth
@@ -17,7 +16,6 @@ class CountryListViewModelFactory(
             // Skapa ViewModel-instansen med dess beroenden
             return CountryListViewModel(countryRepository, auth) as T
         }
-        // Kasta fel om fabriken ombeds skapa en ViewModel den inte känner till
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
