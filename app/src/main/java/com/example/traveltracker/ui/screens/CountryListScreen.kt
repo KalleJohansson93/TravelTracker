@@ -1,19 +1,22 @@
 package com.example.traveltracker.ui.screens
 
+import androidx.compose.foundation.clickable // För att göra Text klickbar
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Star // Exempel ikon, kräver extended
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign // För Text-justering
 import androidx.compose.ui.unit.dp
-import com.example.traveltracker.data.Country // Din kombinerade Country-klass
-import com.example.traveltracker.data.CountryStatus // Din Enum
+import com.example.traveltracker.data.Country
+import com.example.traveltracker.data.CountryStatus
 import com.example.traveltracker.viewmodel.CountryListViewModel
-import android.util.Log // Behåll loggning för debugging
+import android.util.Log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,13 +24,22 @@ fun CountryListScreen(
     viewModel: CountryListViewModel,
     onLogoutClick: () -> Unit
 ) {
-    // Observera staten från ViewModel
     val countries by viewModel.countries.collectAsState()
-    // Behåll error state för att visa meddelanden om t.ex. Firestore-uppdateringar misslyckas
-    // val error by viewModel.error.collectAsState() // Antag att du har en _error StateFlow i ViewModel
+    // Observera statet som håller reda på vilket land som ska betygsättas
+    val countryToRate by viewModel.countryToRateFlow.collectAsState()
+
+    // Visa betygsdialogen om countryToRate inte är null
+    if (countryToRate != null) {
+        RatingDialog(
+            countryCode = countryToRate!!, // ! eftersom vi vet att den inte är null här
+            onRateSelected = { rating -> viewModel.updateCountryRating(countryToRate!!, rating) },
+            onDismiss = { viewModel.cancelRating() }
+        )
+    }
 
     Scaffold(
         topBar = {
+            // ... (TopAppBar code, oförändrad)
             TopAppBar(
                 title = { Text("Select Countries") },
                 actions = {
@@ -51,46 +63,69 @@ fun CountryListScreen(
                         CountryListItem(
                             country = country,
                             onStatusChanged = { newStatus ->
-                                // Anropa ViewModel för att uppdatera status, skicka landkoden
                                 viewModel.updateCountryStatus(country.code, newStatus)
-                            }
+                            },
+                            // *** SKICKA NER onRateClick LAMBDAN ***
+                            onRateClick = { countryCode -> viewModel.onRateClick(countryCode) }
                         )
                         Divider(modifier = Modifier.padding(vertical = 8.dp))
                     }
                 }
             } else {
-
                 Text(
-                    text = "Loading countries or no countries found...", // Bättre text
+                    text = "Loading countries or no countries found...",
                     modifier = Modifier.align(Alignment.Center).padding(16.dp)
                 )
                 Log.d("CountryListScreen", "Showing empty/loading message")
             }
-
-            // Exempel: Visa en CircularProgressIndicator endast om ViewModel indikerar en PÅGÅENDE operation
-            // som tar tid UTÖVER den initiala laddningen/synkningen.
-            // T.ex. om du har en separat flagga i ViewModel för "isUpdatingStatus"
-            // val isUpdatingStatus by viewModel.isUpdatingStatus.collectAsState()
-            // if (isUpdatingStatus) {
-            //     CircularProgressIndicator(modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp))
-            // }
         }
     }
 }
 
+// *** SEPARAT COMPOSABLE FÖR ETT LISTITEM ***
 @Composable
-fun CountryListItem(country: Country, onStatusChanged: (CountryStatus) -> Unit) {
+fun CountryListItem(
+    country: Country,
+    onStatusChanged: (CountryStatus) -> Unit,
+    onRateClick: (String) -> Unit // *** NY LAMBDA FÖR BETYG KLICK ***
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
-        Text(
-            text = country.name,
-            style = MaterialTheme.typography.titleMedium
-        )
+        Row( // Använd en Rad för namn och betygsknapp/text
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween, // Sprid ut Name och Rating-yta
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = country.name,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.weight(1f) // Låt namnet ta upp utrymme
+            )
+            // *** BETYG AV-SNITT ***
+            Row( // Rad för Betygs-ikon/text och klickbar yta
+                modifier = Modifier.padding(start = 8.dp), // Lite marginal
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Valfritt: Visa en stjärnikon eller liknande
+                // Icon(Icons.Default.Star, contentDescription = "Rating")
+
+                // Visa nuvarande betyg eller "Rate" om inget betyg
+                Text(
+                    text = country.userRating?.toString() ?: "Rate",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (country.userRating != null) MaterialTheme.colorScheme.primary else LocalContentColor.current, // Annan färg om betygsatt
+                    textAlign = TextAlign.End, // Justera texten till höger
+                    modifier = Modifier
+                        .clickable { onRateClick(country.code) } // *** GÖR KLICKBAR ***
+                        .padding(horizontal = 4.dp) // Lägg till klick-yta padding
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(8.dp))
-        Row(
+        Row( // Rad för RadioButtons (oförändrad)
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
@@ -118,4 +153,52 @@ fun CountryListItem(country: Country, onStatusChanged: (CountryStatus) -> Unit) 
             }
         }
     }
+}
+
+
+// *** SEPARAT COMPOSABLE FÖR BETYGSDIALOGEN (1-10) ***
+@Composable
+fun RatingDialog(
+    countryCode: String, // Landkoden som betygsätts
+    onRateSelected: (Int) -> Unit, // Lambda när ett betyg väljs
+    onDismiss: () -> Unit // Lambda när dialogen stängs (avbryt)
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss, // Stäng dialogen vid klick utanför eller bakåtknapp
+        title = {
+            // Kan visa landnamnet här, du behöver slå upp det baserat på countryCode
+            // Access till landlistan eller skicka in namnet till dialogen
+            Text("Rate Country") // Enklast att visa generisk titel nu
+        },
+        text = {
+            // Lista med betyg 1-10 i en kolumn
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth().padding(16.dp)
+            ) {
+                // Skapa 10 rader, en för varje betyg
+                (1..10).forEach { rating ->
+                    Text(
+                        text = rating.toString(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onRateSelected(rating) } // Kalla lambda med valt betyg
+                            .padding(vertical = 8.dp),
+                        textAlign = TextAlign.Center
+                    )
+                    if (rating < 10) {
+                        Divider() // Avdelare mellan betyg
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            // En tom confirmButton eller ta bort den om du bara vill klicka på betyget
+            // TextButton(onClick = onDismiss) { Text("Cancel") } // Eller en avbryt-knapp
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
 }

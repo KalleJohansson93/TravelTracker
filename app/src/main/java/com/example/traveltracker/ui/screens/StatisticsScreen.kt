@@ -26,7 +26,6 @@ fun StatisticsScreen(
             TopAppBar(
                 title = { Text("Travel Statistics") },
                 actions = {
-                    // Lägg till en utloggningsikon/knapp i TopAppBar
                     IconButton(onClick = onLogoutClick) {
                         Icon(Icons.Default.Logout, contentDescription = "Logout")
                     }

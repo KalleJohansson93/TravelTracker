@@ -1,6 +1,9 @@
 package com.example.traveltracker.viewmodel
 
 import CountryRepository
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.traveltracker.data.Country // Din kombinerade Country-klass
@@ -16,6 +19,12 @@ class CountryListViewModel(
 
     private val _countries = MutableStateFlow<List<Country>>(emptyList())
     val countries: StateFlow<List<Country>> = _countries.asStateFlow()
+    // *** ÄNDRA DENNA TILL MutableStateFlow OCH StateFlow ***
+    // Den privata, mutable versionen
+    private val _countryToRateFlow = MutableStateFlow<String?>(null)
+    // Den publika, read-only versionen som UI observerar
+    val countryToRateFlow: StateFlow<String?> = _countryToRateFlow.asStateFlow()
+
 
 
     init {
@@ -41,8 +50,6 @@ class CountryListViewModel(
             try {
                 // Anropa repositoryn för att uppdatera status i Firestore
                 countryRepository.updateCountryStatus(countryCode, newStatus)
-                // Repositoryn skriver till Firestore, som sedan triggar Flowen i init-blocket
-                // att skicka ut den uppdaterade listan, som UI:et observerar.
             } catch (e: Exception) {
                 // Hantera fel vid uppdatering
                 // _error.value = "Failed to update status: ${e.message}"
@@ -50,6 +57,30 @@ class CountryListViewModel(
         }
     }
 
-    // Implementera funktioner för att uppdatera betyg
-    // fun updateCountryRating(countryCode: String, rating: Int?) { ... }
+    // *** FUNKTION FÖR ATT INDIKERA ATT ANVÄNDAREN VILL BETYGSÄTTA ETT LAND ***
+    fun onRateClick(countryCode: String) {
+        // Sätt statet till landkoden för att visa betygsdialogen för det landet
+        _countryToRateFlow.value = countryCode
+    }
+
+    // *** FUNKTION FÖR ATT UPPDATERA ETT LANDS BETYG ***
+    fun updateCountryRating(countryCode: String, rating: Int) {
+        viewModelScope.launch {
+            try {
+                // Kalla repositoryn för att spara betyget
+                countryRepository.updateCountryRating(countryCode, rating)
+                // Nollställ statet för att dölja betygsdialogen efter att betyget har skickats
+                _countryToRateFlow.value = null
+            } catch (e: Exception) {
+                // Hantera fel
+                // Nollställ statet även vid fel för att inte blockera UI
+                _countryToRateFlow.value = null
+            }
+        }
+    }
+
+    // *** FUNKTION FÖR ATT AVBRYTA BETYGSÄTTNING ***
+    fun cancelRating() {
+        _countryToRateFlow.value = null // Nollställ statet för att dölja dialogen
+    }
 }

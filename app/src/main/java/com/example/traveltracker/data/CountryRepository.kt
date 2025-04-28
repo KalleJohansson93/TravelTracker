@@ -4,7 +4,6 @@ import com.example.traveltracker.data.Country
 import com.example.traveltracker.data.CountryStatus // Din Enum
 import com.example.traveltracker.data.FirestoreUserCountryDataSource
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine // Använd combine istället för map på Firestore flowen
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
@@ -36,6 +35,7 @@ class CountryRepository(
                 Country(
                     code = staticCountry.code,
                     name = staticCountry.name,
+                    continent = staticCountry.continent,
                     userStatus = userCountryData?.status?.let { statusString ->
                         try { CountryStatus.valueOf(statusString) } catch (e: IllegalArgumentException) { CountryStatus.NOT_VISITED }
                     } ?: CountryStatus.NOT_VISITED, // Default Not Visited om ingen data finns

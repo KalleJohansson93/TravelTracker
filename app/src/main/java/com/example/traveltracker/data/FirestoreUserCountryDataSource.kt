@@ -37,18 +37,13 @@ class FirestoreUserCountryDataSource(
 
     // Uppdatera status för ett specifikt land
     suspend fun updateCountryStatus(countryCode: String, status: CountryStatus) {
-        android.util.Log.e("FirestoreWrite", "User not logged in. Cannot update status for $countryCode")
         val docRef = getUserCountriesCollectionRef()?.document(countryCode) ?: return // Ingen inloggad eller fel ref
-        android.util.Log.d("FirestoreWrite", "User logged in. Attempting to update status for $countryCode")
 
         // Använd SetOptions.merge() för att inte skriva över andra fält som t.ex. rating
-        android.util.Log.d("FirestoreWrite", "Status update successful for $countryCode")
         docRef.set(mapOf("status" to status.name), SetOptions.merge())
             .addOnSuccessListener {
-                android.util.Log.d("FirestoreWrite", "Status update successful for $countryCode")
             }
             .addOnFailureListener { e ->
-                android.util.Log.e("FirestoreWrite", "Status update failed for $countryCode: ${e.message}", e)
             }
             .await() // Behåll await för att suspendera coroutinen
     }
@@ -57,6 +52,9 @@ class FirestoreUserCountryDataSource(
     suspend fun updateCountryRating(countryCode: String, rating: Int?) {
         val docRef = getUserCountriesCollectionRef()?.document(countryCode) ?: return // Ingen inloggad eller fel ref
 
+        // Använd SetOptions.merge() för att inte skriva över andra fält som t.ex. status
+        // rating: null kommer att ta bort fältet i Firestore
         docRef.set(mapOf("rating" to rating), SetOptions.merge()).await()
+        android.util.Log.d("FirestoreWrite", "Rating update successful for $countryCode: $rating")
     }
 }
