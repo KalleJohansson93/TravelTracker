@@ -20,15 +20,20 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.traveltracker.data.FirestoreGlobalStatsDataSource
 
 // Importera dina nya Data Sources och Repository
 import com.example.traveltracker.data.FirestoreUserCountryDataSource
+import com.example.traveltracker.data.FirestoreUserDataDataSource
+import com.example.traveltracker.data.StatisticsRepository
 import com.example.traveltracker.ui.screens.CountryListScreen
 import com.example.traveltracker.ui.screens.StatisticsScreen
 
 // Importera din Factory
 import com.example.traveltracker.viewmodel.CountryListViewModelFactory
 import com.example.traveltracker.viewmodel.CountryListViewModel // Din ViewModel
+import com.example.traveltracker.viewmodel.StatisticsViewModel
+import com.example.traveltracker.viewmodel.StatisticsViewModelFactory
 
 // Importera Firebase instanser
 import com.google.firebase.auth.FirebaseAuth
@@ -94,12 +99,25 @@ fun LoggedInContent(
     // Skapa datakällor
     val localCountryDataSource = remember { LocalCountryDataSource(context) }
     val firestoreUserCountryDataSource = remember { FirestoreUserCountryDataSource(firestore, firebaseAuth) }
+    val firestoreUserDataDataSource = remember { FirestoreUserDataDataSource(firestore, firebaseAuth) } // Ny
+    val firestoreGlobalStatsDataSource = remember { FirestoreGlobalStatsDataSource(firestore) } // Ny
+
 
     // Skapa repository
     val countryRepository = remember { CountryRepository(localCountryDataSource, firestoreUserCountryDataSource) }
+    val statisticsRepository = remember { // Ny
+        StatisticsRepository(
+            localDataSource = localCountryDataSource,
+            firestoreUserCountryDataSource = firestoreUserCountryDataSource,
+            firestoreUserDataDataSource = firestoreUserDataDataSource,
+            firestoreGlobalStatsDataSource = firestoreGlobalStatsDataSource
+        )
+    }
 
     // Skapa ViewModel Factory
     val countryListViewModelFactory = remember { CountryListViewModelFactory(countryRepository, firebaseAuth) }
+    val statisticsViewModelFactory = remember { StatisticsViewModelFactory(statisticsRepository) } // Ny
+
 
     // --- ANVÄND FACTORYN NÄR VIEWMODEL SKAPAS ---
     Scaffold(
@@ -133,18 +151,16 @@ fun LoggedInContent(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(LoggedInRoutes.COUNTRY_LIST) {
-                // Använd viewModel() med din manuella factory
                 val countryListViewModel: CountryListViewModel = viewModel(factory = countryListViewModelFactory)
-
                 CountryListScreen(
                     viewModel = countryListViewModel,
                     onLogoutClick = onLogout
                 )
             }
             composable(LoggedInRoutes.STATISTICS) {
-                // Här behöver du en StatisticsViewModelFactory om den har beroenden
-                // val statisticsViewModel: StatisticsViewModel = viewModel(...)
+                val statisticsViewModel: StatisticsViewModel = viewModel(factory = statisticsViewModelFactory)
                 StatisticsScreen(
+                    viewModel = statisticsViewModel,
                     onLogoutClick = onLogout
                 )
             }
