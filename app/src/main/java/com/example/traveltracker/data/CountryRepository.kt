@@ -35,7 +35,7 @@ class CountryRepository(
                 Country(
                     code = staticCountry.code,
                     name = staticCountry.name,
-                    continent = staticCountry.continent,
+                    //continent = staticCountry.continent,
                     userStatus = userCountryData?.status?.let { statusString ->
                         try { CountryStatus.valueOf(statusString) } catch (e: IllegalArgumentException) { CountryStatus.NOT_VISITED }
                     } ?: CountryStatus.NOT_VISITED, // Default Not Visited om ingen data finns

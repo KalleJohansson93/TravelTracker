@@ -26,6 +26,7 @@ fun CountryListScreen(
 ) {
     val countries by viewModel.countries.collectAsState()
     // Observera statet som håller reda på vilket land som ska betygsättas
+    val searchQuery by viewModel.searchQuery.collectAsState()
     val countryToRate by viewModel.countryToRateFlow.collectAsState()
 
     // Visa betygsdialogen om countryToRate inte är null
@@ -39,7 +40,6 @@ fun CountryListScreen(
 
     Scaffold(
         topBar = {
-            // ... (TopAppBar code, oförändrad)
             TopAppBar(
                 title = { Text("Select Countries") },
                 actions = {
@@ -50,14 +50,32 @@ fun CountryListScreen(
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        // *** ÄNDRA HÄR: Använd en Column för att lägga sökrutan ovanför listan ***
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding) // Applicera innerPadding på Column
+                .padding(horizontal = 16.dp) // Lägg till horisontell padding för hela innehållet
+        ) {
+            // *** NYTT: SÖKRUTA ***
+            OutlinedTextField(
+                value = searchQuery, // Använd söktexten från ViewModel
+                onValueChange = { query -> viewModel.updateSearchQuery(query) }, // Uppdatera ViewModel vid ändring
+                label = { Text("Search Countries") },
+                singleLine = true, // En rad text
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp) // Lite marginal ovan/under sökrutan
+            )
 
+            // Lägg till en Spacer mellan sökrutan och listan om du vill
+            // Spacer(modifier = Modifier.height(8.dp))
+
+            // LazyColumn för landlistan (nu filtrerad)
             if (countries.isNotEmpty()) {
                 Log.d("CountryListScreen", "Showing country list with ${countries.size} items")
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
+                    modifier = Modifier.fillMaxSize() // Fyll resten av utrymmet i Column
                 ) {
                     items(countries, key = { country -> country.code }) { country ->
                         CountryListItem(
@@ -65,7 +83,6 @@ fun CountryListScreen(
                             onStatusChanged = { newStatus ->
                                 viewModel.updateCountryStatus(country.code, newStatus)
                             },
-                            // *** SKICKA NER onRateClick LAMBDAN ***
                             onRateClick = { countryCode -> viewModel.onRateClick(countryCode) }
                         )
                         Divider(modifier = Modifier.padding(vertical = 8.dp))
@@ -73,13 +90,29 @@ fun CountryListScreen(
                 }
             } else {
                 Text(
-                    text = "Loading countries or no countries found...",
-                    modifier = Modifier.align(Alignment.Center).padding(16.dp)
+                    text = if (searchQuery.isNotBlank()) "No countries found matching your search." else "Loading countries or no countries found...",
+                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp) // Justera alignment
                 )
-                Log.d("CountryListScreen", "Showing empty/loading message")
+                Log.d("CountryListScreen", "Showing empty/loading/no results message")
             }
         }
     }
+}
+
+fun String.toEmojiFlag(): String {
+    if (this.length != 2) {
+        return this
+    }
+
+    val countryCodeCaps = this.uppercase()
+    val firstChar = countryCodeCaps[0]
+    val secondChar = countryCodeCaps[1]
+
+    val unicodeOffset = 0x1F1E6
+    val firstEmoji = String(Character.toChars(firstChar.code - 'A'.code + unicodeOffset))
+    val secondEmoji = String(Character.toChars(secondChar.code - 'A'.code + unicodeOffset))
+
+    return firstEmoji + secondEmoji
 }
 
 // *** SEPARAT COMPOSABLE FÖR ETT LISTITEM ***
@@ -100,7 +133,7 @@ fun CountryListItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = country.name,
+                text = "${country.code.toEmojiFlag()} ${country.name}",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.weight(1f) // Låt namnet ta upp utrymme
             )

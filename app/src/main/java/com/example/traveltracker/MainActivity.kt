@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -18,8 +19,14 @@ import com.example.traveltracker.ui.screens.LoginScreen
 import com.example.traveltracker.ui.screens.RegisterScreen
 import com.example.traveltracker.ui.LoggedInContent
 import com.example.traveltracker.ui.theme.TravelTrackerTheme
+import com.example.traveltracker.viewmodel.LoginViewModel
+import com.example.traveltracker.viewmodel.LoginViewModelFactory
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
 
 class MainActivity : ComponentActivity() {
 
@@ -65,6 +72,13 @@ fun AppNavigation() {
     val currentUser: FirebaseUser? by currentUserState
     val isLoggedIn = currentUser != null
 
+    val firebaseAuth = remember { FirebaseAuth.getInstance() }
+    val firebaseApp = remember { FirebaseApp.getInstance() } // Hämta standard-appen
+    // *** HÄMTA FIRESTORE INSTANS FÖR NAMNGIVEN DATABAS ***
+    val firestore = remember { Firebase.firestore(firebaseApp, "traveltracker") } // <--- Använd detta!
+
+    val loginViewModelFactory = remember { LoginViewModelFactory(firebaseAuth, firestore) } // Skicka RÄTT instans
+
     LaunchedEffect(isLoggedIn) {
 
         if (isLoggedIn) {
@@ -84,14 +98,18 @@ fun AppNavigation() {
         startDestination = AppRoutes.LOGIN
     ) {
         composable(AppRoutes.LOGIN) {
+            val loginViewModel: LoginViewModel = viewModel(factory = loginViewModelFactory)
             LoginScreen(
-               onNavigateToRegister = { navController.navigate(AppRoutes.REGISTER) }
+                onNavigateToRegister = { navController.navigate(AppRoutes.REGISTER) },
+                loginViewModel = loginViewModel
             )
         }
         composable(AppRoutes.REGISTER) {
+            val loginViewModel: LoginViewModel = viewModel(factory = loginViewModelFactory)
             RegisterScreen(
                 onNavigateToLogin = { navController.navigate(AppRoutes.LOGIN) },
-                onRegisterSuccess = { navController.navigate(AppRoutes.LOGIN) }
+                onRegisterSuccess = { navController.navigate(AppRoutes.LOGIN) },
+                loginViewModel = loginViewModel
             )
         }
         composable(AppRoutes.LOGGED_IN_CONTENT) {

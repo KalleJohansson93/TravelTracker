@@ -4,7 +4,7 @@ package com.example.traveltracker.data
 data class Country(
     val code: String, // ISO 3166-1 alpha-2 kod
     val name: String,
-    val continent: String,
+    //val continent: String,
     val userStatus: CountryStatus = CountryStatus.NOT_VISITED, // Standardvärde
     val userRating: Int? = null
     // Ev. fler statiska fält från StaticCountry

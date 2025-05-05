@@ -1,12 +1,10 @@
 // package com.example.traveltracker.data
 
 import android.content.Context
-import com.example.traveltracker.R // Din R-fil
+import com.example.traveltracker.R
 import com.example.traveltracker.data.StaticCountry
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.decodeFromString
 import java.io.IOException
-import java.io.InputStream
 
 // Data class som mappar till objekten i din JSON
 // @Serializable har vi redan definierat i förra steget.
@@ -33,13 +31,11 @@ class LocalCountryDataSource(private val context: Context) {
                 json.decodeFromString<List<StaticCountry>>(jsonString)
             }
         } catch (e: IOException) {
-            // Logga felet
             e.printStackTrace()
-            emptyList() // Returnera tom lista vid fel
+            emptyList()
         } catch (e: Exception) {
-            // Logga JSON-parsingsfel
             e.printStackTrace()
-            emptyList() // Returnera tom lista vid fel
+            emptyList()
         }
     }
 }

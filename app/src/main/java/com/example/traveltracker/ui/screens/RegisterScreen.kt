@@ -19,6 +19,7 @@ fun RegisterScreen(
     val uiState by loginViewModel.uiState.collectAsState()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     val isRegisterEnabled by remember { derivedStateOf { email.isNotBlank() && password.isNotBlank() && password == confirmPassword } }
 
@@ -46,6 +47,13 @@ fun RegisterScreen(
         )
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Username") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Lösenord") },
@@ -63,7 +71,7 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                loginViewModel.register(email, password, onRegisterSuccess)
+                loginViewModel.register(email, password, username, onRegisterSuccess)
             },
             enabled = isRegisterEnabled && !uiState.isLoading,
             modifier = Modifier.fillMaxWidth()

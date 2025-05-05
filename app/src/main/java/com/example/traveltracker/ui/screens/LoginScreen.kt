@@ -27,19 +27,19 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Logga in", style = MaterialTheme.typography.headlineSmall)
+        Text("Log in", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("E-post") },
+            label = { Text("Email") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Lösenord") },
+            label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
@@ -51,16 +51,17 @@ fun LoginScreen(
             enabled = isLoginEnabled && !uiState.isLoading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(if (uiState.isLoading) "Loggar in..." else "Logga in")
+            Text(if (uiState.isLoading) "Logging in..." else "Log in")
         }
         Spacer(modifier = Modifier.height(8.dp))
         TextButton(onClick = onNavigateToRegister) {
-            Text("Har du inget konto? Skapa ett här.")
+            Text("No account? Create one here.")
         }
         if (uiState.errorMessage != null) {
             Spacer(modifier = Modifier.height(8.dp))
             val errorMessage = uiState.errorMessage ?: ""
             Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
         }
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
