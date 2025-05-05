@@ -34,6 +34,9 @@ class StatisticsRepository(
             val visitedCountriesCount = userCountryDataMap?.count { (_, data) ->
                 data.status == CountryStatus.VISITED.name // Räkna länder med status "VISITED"
             } ?: 0 // Default 0 om ingen userCountryDataMap
+            val wantedCountriesCount = userCountryDataMap?.count { (_, data) ->
+                data.status == CountryStatus.WANT_TO_VISIT.name
+            } ?: 0
 
             val visitedPercentage = if (totalCountries > 0) {
                 (visitedCountriesCount * 100) / totalCountries
@@ -51,6 +54,15 @@ class StatisticsRepository(
                 }
             } ?: emptyList()
 
+            val topWantedDisplay = globalStats?.mostWanted?.mapNotNull { stat ->
+                staticCountryMap[stat.countryCode]?.let { staticCountry ->
+                    CountryDisplayStat(
+                        countryName = staticCountry.name,
+                        value = stat.count?.toString() ?: "N/A" // Visa antalet som vill besöka
+                    )
+                }
+            } ?: emptyList()
+
             val topRatedDisplay = globalStats?.highestRated?.mapNotNull { stat ->
                 staticCountryMap[stat.countryCode]?.let { staticCountry ->
                     CountryDisplayStat(
@@ -60,6 +72,7 @@ class StatisticsRepository(
                 }
             } ?: emptyList()
 
+            val topUsersDisplay = globalStats?.topUsersVisited ?: emptyList()
 
             // Skapa StatisticsData objektet
             StatisticsData(
@@ -69,6 +82,8 @@ class StatisticsRepository(
                 visitedPercentage = visitedPercentage,
                 topVisitedCountries = topVisitedDisplay.take(5), // Ta bara topp 5
                 topRatedCountries = topRatedDisplay.take(5), // Ta bara topp 5
+                topWantedCountries = topWantedDisplay.take(5),
+                topUsersVisited = topUsersDisplay.take(5),
                 isLoading = false, // Data laddad
                 errorMessage = null // Inget fel vid lyckad kombination
             )
