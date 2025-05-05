@@ -13,7 +13,7 @@ import com.example.traveltracker.viewmodel.LoginViewModel
 @Composable
 fun LoginScreen(
     onNavigateToRegister: () -> Unit,
-    loginViewModel: LoginViewModel = viewModel() // Hämta ViewModel
+    loginViewModel: LoginViewModel = viewModel()
 ) {
     val uiState by loginViewModel.uiState.collectAsState()
     var email by remember { mutableStateOf("") }

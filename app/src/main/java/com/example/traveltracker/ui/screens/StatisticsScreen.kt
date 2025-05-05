@@ -19,11 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.traveltracker.viewmodel.StatisticsViewModel
-import com.example.traveltracker.data.CountryDisplayStat
-import com.example.traveltracker.data.StatisticsData
-import com.example.traveltracker.data.UserStat // *** IMPORTERA UserStat ***
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,20 +43,17 @@ fun StatisticsScreen(
             )
         }
     ) { innerPadding ->
-        // Använd LazyColumn om listorna kan bli långa och för att scrolla
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            // verticalArrangement kan justeras vid användning av LazyColumn om det behövs specifik layout
         ) {
             if (uiState.isLoading || uiState.errorMessage != null) {
                 item {
-                    // Visa laddningsindikator eller felmeddelande centrerat
                     Column(
-                        modifier = Modifier.fillParentMaxSize(), // Fyll hela utrymmet i LazyColumn
+                        modifier = Modifier.fillParentMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -80,10 +73,8 @@ fun StatisticsScreen(
                     }
                 }
             } else {
-                // Visa statistik när den är laddad
 
                 item {
-                    // Personlig Statistik
                     Text(
                         text = "Statistics for ${uiState.username}",
                         style = MaterialTheme.typography.headlineSmall,
@@ -99,8 +90,6 @@ fun StatisticsScreen(
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(bottom = 24.dp)
                     )
-
-                    // Global Statistik Rubrik
                     Text(
                         text = "Global Top Countries",
                         style = MaterialTheme.typography.headlineSmall,
@@ -113,7 +102,7 @@ fun StatisticsScreen(
                 item {
                     if (uiState.topVisitedCountries.isNotEmpty()) {
                         Text(
-                            text = "Most Visited Countries:", // Uppdaterad rubrik för tydlighet
+                            text = "Most Visited Countries:",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
@@ -132,7 +121,7 @@ fun StatisticsScreen(
                 item {
                     if (uiState.topWantedCountries.isNotEmpty()) {
                         Text(
-                            text = "Most Wanted to Visit Countries:", // Uppdaterad rubrik för tydlighet
+                            text = "Most Wanted to Visit Countries:",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
@@ -151,7 +140,7 @@ fun StatisticsScreen(
                 item {
                     if (uiState.topRatedCountries.isNotEmpty()) {
                         Text(
-                            text = "Highest Rated Countries:", // Uppdaterad rubrik för tydlighet
+                            text = "Highest Rated Countries:",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
@@ -163,27 +152,25 @@ fun StatisticsScreen(
                 items(uiState.topRatedCountries) { stat ->
                     Text("${uiState.topRatedCountries.indexOf(stat) + 1}. ${stat.countryName}: ${stat.value} avg rating")
                 }
-                item { Spacer(modifier = Modifier.height(24.dp)) } // Extra mellanslag före ny lista
+                item { Spacer(modifier = Modifier.height(24.dp)) }
 
 
                 // *** NYTT: Topp 5 användare med flest besökta länder ***
                 item {
                     if (uiState.topUsersVisited.isNotEmpty()) {
                         Text(
-                            text = "Users with Most Visited Countries:", // *** NY RUBRIK ***
+                            text = "Users with Most Visited Countries:",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
                         )
                     } else {
-                        Text("No top user data yet (Calculated daily).") // *** Text om listan är tom ***
+                        Text("No top user data yet (Calculated daily).")
                     }
                 }
-                items(uiState.topUsersVisited) { userStat -> // Loopa igenom UserStat listan
+                items(uiState.topUsersVisited) { userStat ->
                     Text("${uiState.topUsersVisited.indexOf(userStat) + 1}. ${userStat.username}: ${userStat.count} countries") // *** Visa username och count ***
                 }
-
-                // ... (Logout knapp om den finns här)
             }
         }
     }

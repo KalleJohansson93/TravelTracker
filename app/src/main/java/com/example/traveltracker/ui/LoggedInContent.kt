@@ -1,8 +1,5 @@
 package com.example.traveltracker.ui
 
-import CountryRepository
-import LocalCountryDataSource
-import android.content.Context // Behövs för att få Context
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
@@ -10,38 +7,36 @@ import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember // Använd remember för att inte skapa instanser i varje recomposition
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext // För att få Context i Composable
-import androidx.lifecycle.viewmodel.compose.viewModel // Används med factory
-import androidx.navigation.NavHostController
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.traveltracker.data.CountryRepository
 import com.example.traveltracker.data.FirestoreGlobalStatsDataSource
 
 // Importera dina nya Data Sources och Repository
 import com.example.traveltracker.data.FirestoreUserCountryDataSource
 import com.example.traveltracker.data.FirestoreUserDataDataSource
+import com.example.traveltracker.data.LocalCountryDataSource
 import com.example.traveltracker.data.StatisticsRepository
 import com.example.traveltracker.ui.screens.CountryListScreen
 import com.example.traveltracker.ui.screens.StatisticsScreen
 
 // Importera din Factory
 import com.example.traveltracker.viewmodel.CountryListViewModelFactory
-import com.example.traveltracker.viewmodel.CountryListViewModel // Din ViewModel
+import com.example.traveltracker.viewmodel.CountryListViewModel
 import com.example.traveltracker.viewmodel.StatisticsViewModel
 import com.example.traveltracker.viewmodel.StatisticsViewModelFactory
 
 // Importera Firebase instanser
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.FirebaseApp
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.FirebaseFirestoreSettings // Importera för offline
+import com.google.firebase.firestore.FirebaseFirestoreSettings
 
 object LoggedInRoutes {
     const val COUNTRY_LIST = "countryList"
@@ -59,36 +54,27 @@ val bottomNavItems = listOf(
     BottomNavItem(LoggedInRoutes.STATISTICS, Icons.Default.ShowChart, "Statistics")
 )
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoggedInContent(
-    appNavController: NavHostController, // Används om du vill navigera UTANFÖR logged-in grafen
-    onLogout: () -> Unit // Lambda för utloggning
+    onLogout: () -> Unit,
+    firestore: FirebaseFirestore
 ) {
     val loggedInNavController = rememberNavController()
     val navBackStackEntry by loggedInNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     // --- SKAPA DEPENDENCIES OCH FACTORY HÄR ---
-    // Använd remember för att dessa instanser ska överleva recompositions
     val context = LocalContext.current
     val firebaseAuth = remember { FirebaseAuth.getInstance() }
-    val firebaseApp = remember { FirebaseApp.getInstance() }
-    val firestore = remember { Firebase.firestore(firebaseApp, "traveltracker") }
 
-    // *** VIKTIGT: Aktivera Offline Persistence här eller i Application-klassen ***
-    // Gör detta bara EN gång i appens livstid
     remember {
         try {
             val settings = FirebaseFirestoreSettings.Builder()
-                .setPersistenceEnabled(true) // Aktivera offline persistence
+                .setPersistenceEnabled(true)
                 .build()
             firestore.firestoreSettings = settings
-            // Logga eller hantera om inställningarna redan är satta
             android.util.Log.d("FirestoreSetup", "Offline persistence enabled")
         } catch (e: Exception) {
-            // Hantera fallet om persistence redan är aktiverat (sker om du sätter det flera gånger)
             android.util.Log.e("FirestoreSetup", "Error enabling offline persistence: ${e.message}")
         }
         // Returnera något värde för remember att cacha, t.ex. true
@@ -99,8 +85,8 @@ fun LoggedInContent(
     // Skapa datakällor
     val localCountryDataSource = remember { LocalCountryDataSource(context) }
     val firestoreUserCountryDataSource = remember { FirestoreUserCountryDataSource(firestore, firebaseAuth) }
-    val firestoreUserDataDataSource = remember { FirestoreUserDataDataSource(firestore, firebaseAuth) } // Ny
-    val firestoreGlobalStatsDataSource = remember { FirestoreGlobalStatsDataSource(firestore) } // Ny
+    val firestoreUserDataDataSource = remember { FirestoreUserDataDataSource(firestore, firebaseAuth) }
+    val firestoreGlobalStatsDataSource = remember { FirestoreGlobalStatsDataSource(firestore) }
 
 
     // Skapa repository
@@ -122,7 +108,6 @@ fun LoggedInContent(
     // --- ANVÄND FACTORYN NÄR VIEWMODEL SKAPAS ---
     Scaffold(
         bottomBar = {
-            // ... (Bottom Navigation Bar code, oförändrad)
             NavigationBar {
                 bottomNavItems.forEach { item ->
                     NavigationBarItem(

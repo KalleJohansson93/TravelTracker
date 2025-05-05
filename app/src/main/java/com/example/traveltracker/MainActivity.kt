@@ -25,7 +25,6 @@ import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 
 class MainActivity : ComponentActivity() {
@@ -49,7 +48,8 @@ fun rememberFirebaseAuthSate(): State<FirebaseUser?> {
 
     DisposableEffect(auth) {
         val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
-            currentUserState.value = firebaseAuth.currentUser
+            val user = firebaseAuth.currentUser
+            currentUserState.value = user
         }
         auth.addAuthStateListener(listener)
         onDispose {
@@ -70,21 +70,17 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val currentUserState: State<FirebaseUser?> = rememberFirebaseAuthSate()
     val currentUser: FirebaseUser? by currentUserState
-    val isLoggedIn = currentUser != null
 
     val firebaseAuth = remember { FirebaseAuth.getInstance() }
-    val firebaseApp = remember { FirebaseApp.getInstance() } // Hämta standard-appen
-    // *** HÄMTA FIRESTORE INSTANS FÖR NAMNGIVEN DATABAS ***
-    val firestore = remember { Firebase.firestore(firebaseApp, "traveltracker") } // <--- Använd detta!
+    val firebaseApp = remember { FirebaseApp.getInstance() }
+    val firestore = remember { Firebase.firestore(firebaseApp, "traveltracker") }
 
-    val loginViewModelFactory = remember { LoginViewModelFactory(firebaseAuth, firestore) } // Skicka RÄTT instans
+    val loginViewModelFactory = remember { LoginViewModelFactory(firebaseAuth, firestore) }
 
-    LaunchedEffect(isLoggedIn) {
-
-        if (isLoggedIn) {
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
             navController.navigate(AppRoutes.LOGGED_IN_CONTENT) {
-                popUpTo(AppRoutes.LOGIN) { inclusive = true }
-                popUpTo(AppRoutes.REGISTER) { inclusive = true }
+                popUpTo(navController.graph.id) { inclusive = true }
             }
         } else {
             navController.navigate(AppRoutes.LOGIN) {
@@ -108,16 +104,17 @@ fun AppNavigation() {
             val loginViewModel: LoginViewModel = viewModel(factory = loginViewModelFactory)
             RegisterScreen(
                 onNavigateToLogin = { navController.navigate(AppRoutes.LOGIN) },
-                onRegisterSuccess = { navController.navigate(AppRoutes.LOGIN) },
+                onRegisterSuccess = {
+                },
                 loginViewModel = loginViewModel
             )
         }
         composable(AppRoutes.LOGGED_IN_CONTENT) {
             LoggedInContent(
-                appNavController = navController,
                 onLogout = {
                     FirebaseAuth.getInstance().signOut()
-                }
+                },
+                firestore = firestore
             )
         }
     }

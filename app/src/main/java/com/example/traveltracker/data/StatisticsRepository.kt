@@ -1,13 +1,8 @@
 package com.example.traveltracker.data
 
-import LocalCountryDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine // Viktigt! Använd combine för att kombinera Flows
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map // Behövs fortfarande för transformationer
-
-// ... befintliga classes (Country, CountryStatus, StaticCountry, UserCountryData, FirestoreUserCountryDataSource, LocalCountryDataSource, FirestoreUserDataDataSource, FirestoreGlobalStatsDataSource)
+import kotlinx.coroutines.flow.combine
 
 class StatisticsRepository(
     private val localDataSource: LocalCountryDataSource,
@@ -17,23 +12,20 @@ class StatisticsRepository(
 ) {
 
     fun getStatisticsData(): Flow<StatisticsData> {
-        // Hämta den statiska landlistan en gång för totala antalet länder
         val staticCountries = localDataSource.getStaticCountries()
         val totalCountries = staticCountries.size
-        val staticCountryMap = staticCountries.associateBy { it.code } // Mappa till landkod för snabb uppslagning
+        val staticCountryMap = staticCountries.associateBy { it.code }
 
         // Kombinera Flows från alla Firestore Data Sources
         return combine(
-            firestoreUserDataDataSource.getUserProfile(), // Användarens profil (för username)
-            firestoreUserCountryDataSource.getUserCountryData(), // Användarens landdata (för räkna besökta)
-            firestoreGlobalStatsDataSource.getGlobalStats() // Global statistik
+            firestoreUserDataDataSource.getUserProfile(),
+            firestoreUserCountryDataSource.getUserCountryData(),
+            firestoreGlobalStatsDataSource.getGlobalStats()
         ) { userProfile, userCountryDataMap, globalStats ->
-            // Detta block körs varje gång NÅGON av de kombinerade Flows skickar ut ny data
-
-            val username = userProfile?.username ?: "Guest" // Default username om ingen profil
+            val username = userProfile?.username ?: "Guest"
             val visitedCountriesCount = userCountryDataMap?.count { (_, data) ->
-                data.status == CountryStatus.VISITED.name // Räkna länder med status "VISITED"
-            } ?: 0 // Default 0 om ingen userCountryDataMap
+                data.status == CountryStatus.VISITED.name
+            } ?: 0
             val wantedCountriesCount = userCountryDataMap?.count { (_, data) ->
                 data.status == CountryStatus.WANT_TO_VISIT.name
             } ?: 0
@@ -44,12 +36,11 @@ class StatisticsRepository(
                 0
             }
 
-            // Förbered globala topplistor med landnamn från den statiska listan
             val topVisitedDisplay = globalStats?.mostVisited?.mapNotNull { stat ->
                 staticCountryMap[stat.countryCode]?.let { staticCountry ->
                     CountryDisplayStat(
                         countryName = staticCountry.name,
-                        value = stat.count?.toString() ?: "N/A" // Visa antalet besökta
+                        value = stat.count?.toString() ?: "N/A"
                     )
                 }
             } ?: emptyList()
@@ -58,7 +49,7 @@ class StatisticsRepository(
                 staticCountryMap[stat.countryCode]?.let { staticCountry ->
                     CountryDisplayStat(
                         countryName = staticCountry.name,
-                        value = stat.count?.toString() ?: "N/A" // Visa antalet som vill besöka
+                        value = stat.count?.toString() ?: "N/A"
                     )
                 }
             } ?: emptyList()
@@ -67,30 +58,27 @@ class StatisticsRepository(
                 staticCountryMap[stat.countryCode]?.let { staticCountry ->
                     CountryDisplayStat(
                         countryName = staticCountry.name,
-                        value = stat.averageRating?.let { "%.2f".format(it) } ?: "N/A" // Visa formaterat betyg
+                        value = stat.averageRating?.let { "%.2f".format(it) } ?: "N/A"
                     )
                 }
             } ?: emptyList()
 
             val topUsersDisplay = globalStats?.topUsersVisited ?: emptyList()
 
-            // Skapa StatisticsData objektet
             StatisticsData(
                 username = username,
                 totalCountries = totalCountries,
                 visitedCountriesCount = visitedCountriesCount,
                 visitedPercentage = visitedPercentage,
-                topVisitedCountries = topVisitedDisplay.take(5), // Ta bara topp 5
-                topRatedCountries = topRatedDisplay.take(5), // Ta bara topp 5
-                topWantedCountries = topWantedDisplay.take(5),
-                topUsersVisited = topUsersDisplay.take(5),
-                isLoading = false, // Data laddad
-                errorMessage = null // Inget fel vid lyckad kombination
+                topVisitedCountries = topVisitedDisplay.take(10),
+                topRatedCountries = topRatedDisplay.take(10),
+                topWantedCountries = topWantedDisplay.take(10),
+                topUsersVisited = topUsersDisplay.take(10),
+                isLoading = false,
+                errorMessage = null
             )
         }.catch { e ->
-            // Hantera fel som kan uppstå under processen (t.ex. Firestore-fel)
             emit(StatisticsData(errorMessage = "Failed to load statistics: ${e.message}"))
         }
-        // Lägg till .onStart { emit(StatisticsData(isLoading = true)) } om du vill visa laddning tills första datan kommer
     }
 }

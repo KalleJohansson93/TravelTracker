@@ -14,7 +14,7 @@ import com.example.traveltracker.viewmodel.LoginViewModel
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit,
-    loginViewModel: LoginViewModel = viewModel() // Använd samma ViewModel för enkelhetens skull
+    loginViewModel: LoginViewModel = viewModel()
 ) {
     val uiState by loginViewModel.uiState.collectAsState()
     var email by remember { mutableStateOf("") }
@@ -26,7 +26,6 @@ fun RegisterScreen(
     LaunchedEffect(uiState.isUserLoggedIn) {
         if (uiState.isUserLoggedIn) {
             onRegisterSuccess()
-            loginViewModel.resetState() // Återställ state efter lyckad registrering
         }
     }
 
@@ -37,12 +36,12 @@ fun RegisterScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Skapa konto", style = MaterialTheme.typography.headlineSmall)
+        Text("Create account", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text("E-post") },
+            label = { Text("Email") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -56,7 +55,7 @@ fun RegisterScreen(
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text("Lösenord") },
+            label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
@@ -64,7 +63,7 @@ fun RegisterScreen(
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
-            label = { Text("Bekräfta lösenord") },
+            label = { Text("Confirm password") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
@@ -76,11 +75,11 @@ fun RegisterScreen(
             enabled = isRegisterEnabled && !uiState.isLoading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(if (uiState.isLoading) "Skapar konto..." else "Skapa konto")
+            Text(if (uiState.isLoading) "Creating account..." else "Create account")
         }
         Spacer(modifier = Modifier.height(8.dp))
         TextButton(onClick = onNavigateToLogin) {
-            Text("Har du redan ett konto? Logga in.")
+            Text("Already have an account? Log in.")
         }
         if (uiState.errorMessage != null) {
             Spacer(modifier = Modifier.height(8.dp))

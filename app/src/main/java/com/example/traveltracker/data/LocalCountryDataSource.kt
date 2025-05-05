@@ -1,14 +1,9 @@
-// package com.example.traveltracker.data
+package com.example.traveltracker.data
 
 import android.content.Context
 import com.example.traveltracker.R
-import com.example.traveltracker.data.StaticCountry
 import kotlinx.serialization.json.Json
 import java.io.IOException
-
-// Data class som mappar till objekten i din JSON
-// @Serializable har vi redan definierat i förra steget.
-// data class StaticCountry(val code: String, val name: String)
 
 class LocalCountryDataSource(private val context: Context) {
 
@@ -16,7 +11,7 @@ class LocalCountryDataSource(private val context: Context) {
     private val json = Json { ignoreUnknownKeys = true }
 
     // Cache för den statiska landlistan
-    private val cachedCountries: List<StaticCountry> by lazy { // Använd lazy för att ladda bara en gång
+    private val cachedCountries: List<StaticCountry> by lazy {
         loadCountriesFromJson()
     }
 
