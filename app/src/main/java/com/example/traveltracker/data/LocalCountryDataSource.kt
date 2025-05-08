@@ -2,6 +2,7 @@ package com.example.traveltracker.data
 
 import android.content.Context
 import com.example.traveltracker.R
+import com.example.traveltracker.data.model.StaticCountry
 import kotlinx.serialization.json.Json
 import java.io.IOException
 

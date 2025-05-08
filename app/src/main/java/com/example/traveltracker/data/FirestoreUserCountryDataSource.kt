@@ -1,5 +1,7 @@
 package com.example.traveltracker.data
 
+import com.example.traveltracker.data.model.CountryStatus
+import com.example.traveltracker.data.model.UserCountryData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -31,14 +33,21 @@ class FirestoreUserCountryDataSource(
     }
 
     suspend fun updateCountryStatus(countryCode: String, status: CountryStatus) {
-        val docRef = getUserCountriesCollectionRef()?.document(countryCode) ?: return
+        val userId = auth.currentUser?.uid ?: return
 
-        docRef.set(mapOf("status" to status.name), SetOptions.merge())
-            .addOnSuccessListener {
-            }
-            .addOnFailureListener { e ->
-            }
-            .await()
+        val countryDocRef = firestore.collection("users").document(userId).collection("userCountries").document(countryCode)
+
+        try {
+            countryDocRef.set(
+                mapOf(
+                    "status" to status.name,
+                ),
+                SetOptions.merge()
+            ).await()
+        } catch (e: Exception) {
+            android.util.Log.e("FirestoreDataSource", "Error updating status for $countryCode: ${e.message}", e)
+            throw e
+        }
     }
 
     suspend fun updateCountryRating(countryCode: String, rating: Int?) {

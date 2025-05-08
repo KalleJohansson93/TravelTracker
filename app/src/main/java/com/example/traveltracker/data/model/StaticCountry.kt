@@ -1,4 +1,4 @@
-package com.example.traveltracker.data
+package com.example.traveltracker.data.model
 
 import kotlinx.serialization.Serializable
 

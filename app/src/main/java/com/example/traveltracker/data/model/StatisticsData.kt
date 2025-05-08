@@ -1,4 +1,4 @@
-package com.example.traveltracker.data
+package com.example.traveltracker.data.model
 
 data class StatisticsData(
     val username: String = "Loading...",

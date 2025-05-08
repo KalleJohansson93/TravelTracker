@@ -2,16 +2,16 @@ package com.example.traveltracker.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.traveltracker.data.Country
+import com.example.traveltracker.data.model.Country
 import com.example.traveltracker.data.CountryRepository
-import com.example.traveltracker.data.CountryStatus
+import com.example.traveltracker.data.model.CountryStatus
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class CountryListViewModel(
-    private val countryRepository: CountryRepository, // Injicera repository
-    private val auth: FirebaseAuth // Injicera FirebaseAuth
+    private val countryRepository: CountryRepository,
+    private val auth: FirebaseAuth
 ) : ViewModel() {
 
     private val _allCountries = MutableStateFlow<List<Country>>(emptyList())
@@ -70,7 +70,7 @@ class CountryListViewModel(
         _countryToRateFlow.value = countryCode
     }
 
-    fun updateCountryRating(countryCode: String, rating: Int) {
+    fun updateCountryRating(countryCode: String, rating: Int?) {
         viewModelScope.launch {
             try {
                 countryRepository.updateCountryRating(countryCode, rating)

@@ -12,8 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.traveltracker.data.Country
-import com.example.traveltracker.data.CountryStatus
+import com.example.traveltracker.data.model.Country
+import com.example.traveltracker.data.model.CountryStatus
 import com.example.traveltracker.viewmodel.CountryListViewModel
 import android.util.Log
 
@@ -176,7 +176,7 @@ fun CountryListItem(
 @Composable
 fun RatingDialog(
     countryCode: String,
-    onRateSelected: (Int) -> Unit,
+    onRateSelected: (Int?) -> Unit,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
@@ -202,6 +202,14 @@ fun RatingDialog(
                     if (rating < 10) {
                         Divider()
                     }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                TextButton(
+                    onClick = { onRateSelected(null) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Remove Rating", color = MaterialTheme.colorScheme.error)
                 }
             }
         },

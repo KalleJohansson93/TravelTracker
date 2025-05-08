@@ -1,4 +1,4 @@
-package com.example.traveltracker.data
+package com.example.traveltracker.data.model
 
 // Den här klassen kombinerar statisk info och användares data för UI:t
 data class Country(

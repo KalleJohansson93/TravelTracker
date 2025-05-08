@@ -1,7 +1,7 @@
 package com.example.traveltracker.viewmodel
 
 import com.example.traveltracker.data.StatisticsRepository
-import com.example.traveltracker.data.StatisticsData
+import com.example.traveltracker.data.model.StatisticsData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*

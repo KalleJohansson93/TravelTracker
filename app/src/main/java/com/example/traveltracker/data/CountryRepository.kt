@@ -1,5 +1,7 @@
 package com.example.traveltracker.data
 
+import com.example.traveltracker.data.model.Country
+import com.example.traveltracker.data.model.CountryStatus
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map

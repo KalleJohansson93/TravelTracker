@@ -1,4 +1,4 @@
-package com.example.traveltracker.data
+package com.example.traveltracker.data.model
 
 data class GlobalStats(
     val mostVisited: List<CountryStat> = emptyList(),

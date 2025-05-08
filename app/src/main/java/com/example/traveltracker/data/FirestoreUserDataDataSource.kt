@@ -1,5 +1,7 @@
 package com.example.traveltracker.data
 
+import com.example.traveltracker.data.model.GlobalStats
+import com.example.traveltracker.data.model.UserProfile
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.snapshots
