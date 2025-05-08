@@ -161,13 +161,13 @@ export const aggregateUserCountryWrite = functions.firestore
               const mostVisited = allAggregates
                 .filter((agg: CountryAggregate) => agg.visitedCount > 0)
                 .sort((a: { visitedCount: number }, b: { visitedCount: number }) => b.visitedCount - a.visitedCount) // Sort här
-                .slice(0, 5)
+                .slice(0, 10)
                 .map((agg) => ({countryCode: agg.countryCode, count: agg.visitedCount}));
 
               const mostWanted = allAggregates
                 .filter((agg: CountryAggregate) => agg.wantedCount > 0) // Filtrera på wantedCount
                 .sort((a: { wantedCount: number }, b: { wantedCount: number }) => b.wantedCount - a.wantedCount) // Sortera på wantedCount
-                .slice(0, 5)
+                .slice(0, 10)
                 .map((agg) => ({countryCode: agg.countryCode, count: agg.wantedCount})); // Returnera count för wanted
 
               // Beräkna topp 5 högst betygsatta från ALLA aggregeringar
@@ -178,7 +178,7 @@ export const aggregateUserCountryWrite = functions.firestore
                   averageRating: agg.ratingSum / agg.ratingCount,
                 }))
                 .sort((a: { averageRating: number }, b: { averageRating: number }) => b.averageRating - a.averageRating) // Sort här
-                .slice(0, 5)
+                .slice(0, 10)
                 .map((agg) => ({countryCode: agg.countryCode, averageRating: agg.averageRating})); // Final map för output
 
 
@@ -244,7 +244,7 @@ export const calculateTopUsersVisitedScheduled = onSchedule(
     try {
       const usersQuerySnapshot = await db.collection("users")
         .orderBy("visitedCountriesCount", "desc")
-        .limit(5)
+        .limit(10)
         .select("username", "visitedCountriesCount")
         .get();
 
