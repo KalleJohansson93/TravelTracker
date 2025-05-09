@@ -3,14 +3,17 @@ package com.example.traveltracker.ui
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material3.*
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -54,6 +57,7 @@ val bottomNavItems = listOf(
     BottomNavItem(LoggedInRoutes.STATISTICS, Icons.Default.ShowChart, "Statistics")
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoggedInContent(
     onLogout: () -> Unit,
@@ -63,7 +67,6 @@ fun LoggedInContent(
     val navBackStackEntry by loggedInNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    // --- SKAPA DEPENDENCIES OCH FACTORY HÄR ---
     val context = LocalContext.current
     val firebaseAuth = remember { FirebaseAuth.getInstance() }
 
@@ -73,25 +76,19 @@ fun LoggedInContent(
                 .setPersistenceEnabled(true)
                 .build()
             firestore.firestoreSettings = settings
-            android.util.Log.d("FirestoreSetup", "Offline persistence enabled")
         } catch (e: Exception) {
-            android.util.Log.e("FirestoreSetup", "Error enabling offline persistence: ${e.message}")
         }
-        // Returnera något värde för remember att cacha, t.ex. true
         true
     }
 
-
-    // Skapa datakällor
+    // Skapa datakällor, repository, ViewModels factories
     val localCountryDataSource = remember { LocalCountryDataSource(context) }
     val firestoreUserCountryDataSource = remember { FirestoreUserCountryDataSource(firestore, firebaseAuth) }
     val firestoreUserDataDataSource = remember { FirestoreUserDataDataSource(firestore, firebaseAuth) }
     val firestoreGlobalStatsDataSource = remember { FirestoreGlobalStatsDataSource(firestore) }
 
-
-    // Skapa repository
     val countryRepository = remember { CountryRepository(localCountryDataSource, firestoreUserCountryDataSource) }
-    val statisticsRepository = remember { // Ny
+    val statisticsRepository = remember {
         StatisticsRepository(
             localDataSource = localCountryDataSource,
             firestoreUserCountryDataSource = firestoreUserCountryDataSource,
@@ -100,15 +97,35 @@ fun LoggedInContent(
         )
     }
 
-    // Skapa ViewModel Factory
     val countryListViewModelFactory = remember { CountryListViewModelFactory(countryRepository, firebaseAuth) }
-    val statisticsViewModelFactory = remember { StatisticsViewModelFactory(statisticsRepository) } // Ny
+    val statisticsViewModelFactory = remember { StatisticsViewModelFactory(statisticsRepository) }
 
-
-    // --- ANVÄND FACTORYN NÄR VIEWMODEL SKAPAS ---
     Scaffold(
+        topBar = {
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    actionIconContentColor = MaterialTheme.colorScheme.onBackground
+                ),
+                title = {
+                    Text(when (currentRoute) {
+                        LoggedInRoutes.COUNTRY_LIST -> "Select Countries"
+                        LoggedInRoutes.STATISTICS -> "Statistics"
+                        else -> ""
+                    })
+                },
+                actions = {
+                    IconButton(onClick = onLogout) {
+                        Icon(Icons.Default.Logout, contentDescription = "Logout")
+                    }
+                }
+            )
+        },
         bottomBar = {
-            NavigationBar {
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+            ) {
                 bottomNavItems.forEach { item ->
                     NavigationBarItem(
                         icon = { Icon(item.icon, contentDescription = item.label) },
@@ -138,15 +155,13 @@ fun LoggedInContent(
             composable(LoggedInRoutes.COUNTRY_LIST) {
                 val countryListViewModel: CountryListViewModel = viewModel(factory = countryListViewModelFactory)
                 CountryListScreen(
-                    viewModel = countryListViewModel,
-                    onLogoutClick = onLogout
+                    viewModel = countryListViewModel
                 )
             }
             composable(LoggedInRoutes.STATISTICS) {
                 val statisticsViewModel: StatisticsViewModel = viewModel(factory = statisticsViewModelFactory)
                 StatisticsScreen(
-                    viewModel = statisticsViewModel,
-                    onLogoutClick = onLogout
+                    viewModel = statisticsViewModel
                 )
             }
         }

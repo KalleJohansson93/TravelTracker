@@ -1,5 +1,6 @@
 package com.example.traveltracker.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,11 +33,12 @@ fun RegisterScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Create account", style = MaterialTheme.typography.headlineSmall)
+        Text("Create account", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground)
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = email,
@@ -86,5 +88,6 @@ fun RegisterScreen(
             val errorMessage = uiState.errorMessage ?: ""
             Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
         }
+        Spacer(modifier = Modifier.height(20.dp))
     }
 }

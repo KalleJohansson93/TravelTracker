@@ -4,8 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,11 +15,9 @@ import com.example.traveltracker.data.model.CountryStatus
 import com.example.traveltracker.viewmodel.CountryListViewModel
 import android.util.Log
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CountryListScreen(
     viewModel: CountryListViewModel,
-    onLogoutClick: () -> Unit
 ) {
     val countries by viewModel.countries.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -35,22 +31,10 @@ fun CountryListScreen(
         )
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Select Countries") },
-                actions = {
-                    IconButton(onClick = onLogoutClick) {
-                        Icon(Icons.Default.Logout, contentDescription = "Logout")
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
             OutlinedTextField(
@@ -60,7 +44,6 @@ fun CountryListScreen(
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    //.padding(vertical = 8.dp) // Lite marginal ovan/under sökrutan
             )
 
             if (countries.isNotEmpty()) {
@@ -88,7 +71,7 @@ fun CountryListScreen(
             }
         }
     }
-}
+
 
 fun String.toEmojiFlag(): String {
     if (this.length != 2) {

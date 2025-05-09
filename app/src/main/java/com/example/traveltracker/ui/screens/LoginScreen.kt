@@ -1,6 +1,10 @@
 package com.example.traveltracker.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import com.example.traveltracker.R
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,11 +27,22 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Log in", style = MaterialTheme.typography.headlineSmall)
+        Image(
+            painter = painterResource(id = R.drawable.globe_logo),
+            contentDescription = "App Logo (Globe)",
+            modifier = Modifier
+                .size(126.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Text("Log in", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground)
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = email,
@@ -62,6 +77,6 @@ fun LoginScreen(
             val errorMessage = uiState.errorMessage ?: ""
             Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
         }
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(160.dp))
     }
 }
