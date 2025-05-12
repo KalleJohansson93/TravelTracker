@@ -32,45 +32,47 @@ fun CountryListScreen(
     }
 
 
-        Column(
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+    ) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { query -> viewModel.updateSearchQuery(query) },
+            label = { Text("Search Countries") },
+            singleLine = true,
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-        ) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { query -> viewModel.updateSearchQuery(query) },
-                label = { Text("Search Countries") },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
+                .fillMaxWidth()
+        )
 
-            if (countries.isNotEmpty()) {
-                Log.d("CountryListScreen", "Showing country list with ${countries.size} items")
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(countries, key = { country -> country.code }) { country ->
-                        CountryListItem(
-                            country = country,
-                            onStatusChanged = { newStatus ->
-                                viewModel.updateCountryStatus(country.code, newStatus)
-                            },
-                            onRateClick = { countryCode -> viewModel.onRateClick(countryCode) }
-                        )
-                        Divider(modifier = Modifier.padding(vertical = 8.dp))
-                    }
+        if (countries.isNotEmpty()) {
+            Log.d("CountryListScreen", "Showing country list with ${countries.size} items")
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(countries, key = { country -> country.code }) { country ->
+                    CountryListItem(
+                        country = country,
+                        onStatusChanged = { newStatus ->
+                            viewModel.updateCountryStatus(country.code, newStatus)
+                        },
+                        onRateClick = { countryCode -> viewModel.onRateClick(countryCode) }
+                    )
+                    Divider(modifier = Modifier.padding(vertical = 8.dp))
                 }
-            } else {
-                Text(
-                    text = if (searchQuery.isNotBlank()) "No countries found matching your search." else "Loading countries or no countries found...",
-                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)
-                )
-                Log.d("CountryListScreen", "Showing empty/loading/no results message")
             }
+        } else {
+            Text(
+                text = if (searchQuery.isNotBlank()) "No countries found matching your search." else "Loading countries or no countries found...",
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(16.dp)
+            )
+            Log.d("CountryListScreen", "Showing empty/loading/no results message")
         }
     }
+}
 
 
 fun String.toEmojiFlag(): String {
@@ -170,8 +172,16 @@ fun RatingDialog(
         text = {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth().padding(16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
+                Text(
+                    text = "Bad",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+
                 (1..10).forEach { rating ->
                     Text(
                         text = rating.toString(),
@@ -182,10 +192,17 @@ fun RatingDialog(
                             .padding(vertical = 8.dp),
                         textAlign = TextAlign.Center
                     )
+
                     if (rating < 10) {
                         Divider()
                     }
                 }
+
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Best",
+                    style = MaterialTheme.typography.bodyMedium
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
                 TextButton(
